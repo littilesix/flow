@@ -10,21 +10,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    # 1. 检出代码 (升级到 v4)
+    - uses: actions/checkout@v4
 
+    # 2. 设置 Node.js 环境 (升级到 v4，并使用 Node 20)
     - name: Setup Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: '20'
 
+    # 3. 安装依赖
     - name: Install Dependencies
       run: npm install
 
+    # 4. 编译打包
     - name: Build
       run: npm run build
 
+    # 5. 上传成品 (这里是报错的原因，已升级到 v4)
     - name: Upload Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: flow-reader-dist
-        path: dist/ # 如果失败，尝试改成 build/，大部分vite项目是dist
+        path: dist/
+        # 注意：如果 pacexy/flow 的输出目录是 build 而不是 dist
+        # 且上面的步骤报错找不到目录，请将 path 改为 build/
