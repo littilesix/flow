@@ -10,35 +10,36 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # 1. 检出代码 (v4)
     - uses: actions/checkout@v4
 
-    # 2. 设置 Node.js 环境 (v4)
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '20'
 
-    # 3. 安装依赖
+    # 1. 安装根目录依赖
     - name: Install Dependencies
       run: npm install
 
-    # [最终关键修正] 4. 使用正确的 --force 参数进行编译
-    # 修正：--force-build 已替换为 --force
+    # [新增核心步骤] 2. 预处理子项目依赖 (Monorepo 专用)
+    # 确保子项目能找到其 node_modules 依赖
+    - name: Turbo Link Sub-Dependencies
+      run: npx turbo link
+
+    # [最终编译] 3. 强制编译 Website 子项目
     - name: Force Build Website Only
       run: npx turbo run build --scope=@flow/website --force
 
-    # 5. 排错与确认 (用于确认文件生成)
+    # 4. 排错与确认
     - name: Debug - List Website Output
       run: |
         echo "=== Listing Website Output Directory ==="
         # 尝试列出 apps/website/dist/ 的内容
         ls -R apps/website/dist/ || echo "apps/website/dist/ not found (Build failure)"
 
-    # 6. 上传成品 (v4)
+    # 5. 上传成品
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
         name: flow-reader-dist
-        # 正确的 Monorepo 输出路径
         path: apps/website/dist/
