@@ -1,0 +1,30 @@
+name: Build Static Site
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install Dependencies
+      run: npm install
+
+    - name: Build
+      run: npm run build
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: flow-reader-dist
+        path: dist/ # 如果失败，尝试改成 build/，大部分vite项目是dist
