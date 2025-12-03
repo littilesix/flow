@@ -10,28 +10,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # 1. 检出代码 (升级到 v4)
     - uses: actions/checkout@v4
 
-    # 2. 设置 Node.js 环境 (升级到 v4，并使用 Node 20)
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '20'
 
-    # 3. 安装依赖
     - name: Install Dependencies
       run: npm install
 
-    # 4. 编译打包
     - name: Build
       run: npm run build
 
-    # 5. 上传成品 (这里是报错的原因，已升级到 v4)
+    # [新增] 调试步骤：列出当前目录下的所有文件
+    # 这样如果报错，你可以点开这一步看看到底生成了什么文件夹
+    - name: List Output Files (Debug)
+      run: ls -al
+
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
         name: flow-reader-dist
-        path: dist/
-        # 注意：如果 pacexy/flow 的输出目录是 build 而不是 dist
-        # 且上面的步骤报错找不到目录，请将 path 改为 build/
+        # [修改] 这里尝试使用 build/ 文件夹
+        # 如果你的项目生成的是其他名字（比如 out），请根据上面的 Debug 步骤修改这里
+        path: build/
