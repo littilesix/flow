@@ -1,44 +1,19 @@
-name: Build Static Site
+- name: Force Build Website Only
+      # 1. 强行指定只编译 @flow/website 这个子项目
+      # 2. --force-build 确保它一定尝试构建，不依赖缓存
+      # 3. 增加 --filter 选项，确保 build 成功后输出目录结构
+      run: npx turbo run build --scope=@flow/website --force-build
 
-on:
-  push:
-    branches: [ main, master ]
-  workflow_dispatch:
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-
-    - name: Install Dependencies
-      run: npm install
-
-    # [关键修改] 跳过 package.json 里的 tsc 检查，直接强制打包
-    # 这能解决 90% 的 "没生成文件" 问题
-    - name: Force Build (Skip Type Check)
-      run: npx vite build
-
-    # [排错步骤] 列出所有文件结构
-    # 如果上传失败，请点开这一步的日志，看看蓝色的文件夹到底叫什么
-    - name: Debug - List All Files
+    # [新增] 调试步骤：列出 apps/website/ 目录下的所有文件
+    # 因为 turbo run build 会把文件生成在子项目的 node_modules 下面，我们定位到 apps/website/
+    - name: Debug - List Website Output
       run: |
-        echo "=== Listing Root Directory ==="
-        ls -F
-        echo "=== Listing dist Directory (if exists) ==="
-        ls -F dist/ || echo "dist folder not found"
-        echo "=== Listing build Directory (if exists) ==="
-        ls -F build/ || echo "build folder not found"
+        echo "=== Listing Website Output Directory ==="
+        ls -F apps/website/dist/ || echo "apps/website/dist/ not found"
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
         name: flow-reader-dist
-        # Vite 默认输出就是 dist，我们改回 dist
-        path: dist/
+        # [修改] 关键：现在文件在 apps/website/dist/ 目录下，不是在根目录
+        path: apps/website/dist/
